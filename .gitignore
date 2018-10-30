@@ -1,2 +1,4 @@
 *.otf
 *.ttf
+/data/**/**
+*.ipynb_checkpoints
