@@ -21,9 +21,9 @@ def get_corners(pxl):
 def crop_check(x1,x2,y1,y2):
 	x_shift, y_shift = 0, 0
 	if y2 >= 127:
-		y_shift = y2-127
+		y_shift = y2-140
 	if x2 >= 127:
-		x_shift = x2-127
+		x_shift = x2-140
 	return x_shift, y_shift
 
 
@@ -52,7 +52,7 @@ def center_check(x1,x2,y1,y2):
     radius = np.sqrt( (center_x - 64)**2 + (center_y - 64)**2 )
     x_shift, y_shift = 0,0
     if radius >= 10:
-        x_shift = 64 - center_x#if x_shift is negative, then must be shifted down.
+        x_shift = 64.0 - center_x#if x_shift is negative, then must be shifted down.
         y_shift = 64.0 - center_y #if y_shift is negative, then must be shifted to the left
         return x_shift, y_shift
     return x_shift, y_shift
@@ -60,7 +60,7 @@ def center_check(x1,x2,y1,y2):
 
 def dilate_check(x1,x2,y1,y2):
     area = np.abs((x2 - x1) * (y2 - y1))
-    if area < 4900:
+    if area < 4500:
         height = x2 - x1
         width = y2 - y1
         dims = [height, width]
