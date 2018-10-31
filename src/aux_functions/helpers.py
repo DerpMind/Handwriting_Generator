@@ -1,14 +1,9 @@
 from PIL import Image, ImageFont, ImageDraw
 import numpy as np
+from pdb import set_trace
 
 
 FONT_PATH = '../data/fonts/'
-
-
-def img_to_pxl(img_path):
-	img = Image.open(img_path)
-	pxl = np.array(img)
-	return pxl
 
 
 def rgb2gray(pxl):
@@ -25,13 +20,34 @@ def get_corners(pxl):
     return corners
 
 
+def crop_check(x1,x2,y1,y2):
+	x_shift, y_shift = 0, 0
+	if y2 >= 127:
+		y_shift = y2-127
+	if x2 >= 127:
+		x_shift = x2-127
+	# if x1 == 0:
+	# 	x_shift = -10
+	# if y1 == 0:
+	# 	y_shift = 10
+	return x_shift, y_shift
+
+
 def downsize_check(x1,x2,y1,y2):
-	if x2 == 127 or x1 == 0:
-		font_size_factor = 0.6
-		return font_size_factor
-	elif y2 == 127 or y1 == 0:
-		font_size_factor = 0.8
-		return font_size_factor
+	height = x2 - x1
+	width = y2 - y1
+	if height >= 120:
+		if height >= 140:
+			downsize_factor = 0.3
+		else:
+			downsize_factor = 0.5
+		return downsize_factor
+	elif width >= 90:
+		if width >= 120:
+			downsize_factor = 0.3
+		else:
+			downsize_factor = 0.5
+		return downsize_factor
 	else:
 		return 1
 
@@ -49,35 +65,90 @@ def center_check(x1,x2,y1,y2):
 def dilate_check(x1,x2,y1,y2):
     area = np.abs((x2 - x1) * (y2 - y1))
     if area < 4900:
-        old_length = x2 - x1
-        font_size_factor = 94.0/old_length
+        height = x2 - x1
+        width = y2 - y1
+        dims = [height, width]
+        dim = min(dims)
+        font_size_factor = int(94.0/dim) #assuming ideal pxl size of font is 94 by 94
         return font_size_factor
     else:
     	return 1
 
 
-def preprocess_parameterization_part_one(sample_path, letter,downsize_factor=1, dilate_factor=1):
-	font_name = sample_path.split('/')[-1].split('.')[0]
-	font_name = font_name[:len(font_name)-2]
-	ttf_file = f'{FONT_PATH}{font_name}.ttf'
-	fnt = ImageFont.truetype(ttf_file, int(90*downsize_factor*dilate_factor))
-	img = Image.new('RGB', (128,128), color = 'white')
+def ttf_to_png(ttf, letter, downsize_factor=1, dilate_factor=1, \
+	x_shift=0, y_shift=0,pxl_shape = (128,128),top=5, left=0 ):
+	fnt = ImageFont.truetype(ttf, int(90*downsize_factor*dilate_factor))
+	img = Image.new('RGB', pxl_shape, color = 'white')
 	d = ImageDraw.Draw(img)
-	d.text((5,0), letter, font=fnt, fill=(0,0,0))
-	temp = font_name.split('/')[-1].split('.')[0]
-	png_path = f'../data/preprocess_examples/{temp}.png'
-	img.save(png_path)
-	return png_path
+	d.text((top+y_shift,left+x_shift), letter, font=fnt, fill=(0,0,0))
+	return img
 
-def preprocess_parameterization_part_two(sample_path, letter,downsize_factor, dilate_factor,x_shift = 0, y_shift = 0):
-	font_name = sample_path.split('/')[-1].split('.')[0]
-	# font_name = font_name[:len(font_name)-2]
-	ttf_file = f'{FONT_PATH}{font_name}.ttf'
-	fnt = ImageFont.truetype(ttf_file, int(90*downsize_factor*dilate_factor))
-	img = Image.new('RGB', (128,128), color = 'white')
-	d = ImageDraw.Draw(img)
-	d.text((5 + x_shift,0+y_shift), letter, font=fnt, fill=(0,0,0))
-	temp = font_name.split('/')[-1].split('.')[0]
-	png_path = f'../data/preprocess_examples/{temp}.png'
-	img.save(png_path)
-	return png_path
+def png_to_coordinates(img):
+	img = np.asarray(img)
+	img = rgb2gray(img)
+	corners = get_corners(img)
+	x1 = corners['top']
+	x2 = corners['bottom']
+	y1 = corners['left']
+	y2 = corners['right']
+	return x1,x2,y1,y2
+
+
+def downsize_parameters(ttf,letter):
+	downsize_factor = 1
+	while True:
+		img = ttf_to_png(ttf, letter, downsize_factor=downsize_factor, \
+			 pxl_shape = (500,500),top=100,left=100)
+		x1,x2,y1,y2 = png_to_coordinates(img)
+		downsize_factor = downsize_check(x1,x2,y1,y2)
+		if downsize_factor == 1:
+			return downsize_factor
+		else:
+			return downsize_factor
+
+def decrop_parameters(ttf, letter, downsize_factor, pxl_shape = (500,500),top=100,left=100):
+	x_shift, y_shift = 0,0
+	while True:
+		img = ttf_to_png(ttf, letter, x_shift=x_shift,y_shift=y_shift, \
+		downsize_factor=downsize_factor)
+
+
+
+def dilate_parameters(ttf,letter,downsize_factor, x_shift, y_shift):
+	dilate_factor = 1
+	while True:
+		img = ttf_to_png(ttf, letter, x_shift=x_shift,y_shift=y_shift, \
+			downsize_factor=downsize_factor, dilate_factor=dilate_factor)
+		x1,x2,y1,y2 = png_to_coordinates(img)
+		dilate_factor = dilate_check(x1,x2,y1,y2)
+		if dilate_factor == 1:
+			break
+		else:
+			return dilate_factor
+	return dilate_factor
+
+
+def center_parameters(ttf, letter, downsize_factor, dilate_factor,x_shift, y_shift):
+	while True:
+		img = ttf_to_png(ttf, letter, x_shift=x_shift,y_shift=y_shift, \
+			downsize_factor=downsize_factor, dilate_factor=dilate_factor)
+		x1,x2,y1,y2 = png_to_coordinates(img)
+		new_x_shift, new_y_shift = center_check(x1,x2,y1,y2)
+		if (new_x_shift, new_y_shift) == (0,0):
+			break
+		else:
+			x_shift = new_x_shift + x_shift
+			y_shift = new_y_shift + y_shift
+			return x_shift, y_shift
+	return x_shift, y_shift
+
+
+def processed_img_constructor(ttf, letter, downsize_factor, dilate_factor,x_shift, y_shift):
+	img = ttf_to_png(ttf, letter, downsize_factor=downsize_factor, dilate_factor=dilate_factor,\
+		x_shift=x_shift, y_shift=y_shift)
+	font_name = ttf.split('/')[-1].split('.')[0]
+	img_path = f'../data/preprocess_examples/{font_name}_{letter}.png'
+	img.save(img_path)
+	pxls = np.asarray(img)
+	return pxls
+
