@@ -12,6 +12,7 @@ def rgb2gray(pxl):
 
 def get_corners(pxl):
     bools = np.where(pxl==255, True, False)
+    # set_trace()
     return {'top': np.where(bools == False)[0].min(),
     'left':np.where(bools==False)[1].min(),
     'bottom': np.where(bools==False)[0].max(),
@@ -20,10 +21,10 @@ def get_corners(pxl):
 
 def crop_check(x1,x2,y1,y2):
 	x_shift, y_shift = 0, 0
-	if y2 >= 127:
-		y_shift = y2-140
-	if x2 >= 127:
-		x_shift = x2-140
+	if y2 >= 227:
+		y_shift = 220-y2
+	if x2 >= 227:
+		x_shift = 220-x2
 	return x_shift, y_shift
 
 
@@ -51,7 +52,7 @@ def center_check(x1,x2,y1,y2):
     center_y = (y2+y1)/2.0
     radius = np.sqrt( (center_x - 64)**2 + (center_y - 64)**2 )
     x_shift, y_shift = 0,0
-    if radius >= 10:
+    if radius >= 20:
         x_shift = 64.0 - center_x#if x_shift is negative, then must be shifted down.
         y_shift = 64.0 - center_y #if y_shift is negative, then must be shifted to the left
         return x_shift, y_shift
@@ -65,7 +66,7 @@ def dilate_check(x1,x2,y1,y2):
         width = y2 - y1
         dims = [height, width]
         dim = min(dims)
-        font_size_factor = int(94.0/dim) #assuming ideal pxl size of font is 94 by 94
+        font_size_factor = min(2,int(94.0/dim)) #assuming ideal pxl size of font is 94 by 94
         return font_size_factor
     else:
     	return 1
@@ -95,10 +96,11 @@ def downsize_parameters(ttf,letter):
 	return downsize_factor
 
 
-def decrop_parameters(ttf, letter, downsize_factor, pxl_shape = (500,500),top=100,left=100):
+def decrop_parameters(ttf, letter, downsize_factor, dilate_factor=1):
 	x_shift, y_shift = 0,0
 	img = ttf_to_png(ttf, letter, x_shift=x_shift,y_shift=y_shift, \
-	downsize_factor=downsize_factor)
+	downsize_factor=downsize_factor,dilate_factor=dilate_factor,
+	 pxl_shape = (500,500),top=100,left=100)
 	x1,x2,y1,y2 = png_to_coordinates(img)
 	x_shift, y_shift = crop_check(x1,x2,y1,y2)
 	return x_shift, y_shift
@@ -128,7 +130,7 @@ def processed_img_constructor(ttf, letter, downsize_factor, dilate_factor,x_shif
 	img = ttf_to_png(ttf, letter, downsize_factor=downsize_factor, dilate_factor=dilate_factor,\
 		x_shift=x_shift, y_shift=y_shift)
 	font_name = ttf.split('/')[-1].split('.')[0]
-	img_path = f'../data/preprocess_examples/{font_name}_{letter}.png'
+	img_path = f'../data/{letter}/{font_name}.png'
 	img.save(img_path)
 	pxls = np.asarray(img)
 	return pxls
