@@ -59,15 +59,15 @@ def center_check(x1,x2,y1,y2):
 	'''Checks to see whether the character
 	is centered based on a radius threshold. Radius
 	is determined by measuring Euclidean distance.'''
-    center_x = (x2+x1)/2.0
-    center_y = (y2+y1)/2.0
-    radius = np.sqrt( (center_x - 64)**2 + (center_y - 64)**2 )
-    x_shift, y_shift = 0,0
-    if radius >= 20:
-        x_shift = 64.0 - center_x#if x_shift is negative, then must be shifted down.
-        y_shift = 64.0 - center_y #if y_shift is negative, then must be shifted to the left
-        return x_shift, y_shift
-    return x_shift, y_shift
+	center_x = (x2+x1)/2.0
+	center_y = (y2+y1)/2.0
+	radius = np.sqrt( (center_x - 64)**2 + (center_y - 64)**2 )
+	x_shift, y_shift = 0,0
+	if radius >= 20:
+		x_shift = 64.0 - center_x#if x_shift is negative, then must be shifted down.
+		y_shift = 64.0 - center_y #if y_shift is negative, then must be shifted to the left
+		return x_shift, y_shift
+	return x_shift, y_shift
 
 
 def dilate_check(x1,x2,y1,y2):
@@ -75,15 +75,15 @@ def dilate_check(x1,x2,y1,y2):
 	small based on height and width and area of 
 	the character'''
 	height = x2 - x1
-    width = y2 - y1
-    area = np.abs(height * width)
-    if area < 4500:
-        dims = [height, width]
-        dim = min(dims)
-        font_size_factor = min(2,int(94.0/dim)) #assuming ideal pxl size of font is 94 by 94
-        return font_size_factor
-    else:
-    	return 1
+	width = y2 - y1
+	area = np.abs(height * width)
+	if area < 4500:
+		dims = [height, width]
+		dim = min(dims)
+		font_size_factor = min(2,int(94.0/dim)) #assuming ideal pxl size of font is 94 by 94
+		return font_size_factor
+	else:
+		return 1
 
 
 def ttf_to_png(ttf, letter, downsize_factor=1, dilate_factor=1, \
