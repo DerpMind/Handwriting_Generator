@@ -4,4 +4,5 @@
 *.otf
 *.ttf
 /data/**/**
+/models/**/**
 *.ipynb_checkpoints
