@@ -161,7 +161,7 @@ def processed_img_constructor(ttf, letter, downsize_factor, dilate_factor,x_shif
 	img = ttf_to_png(ttf, letter, downsize_factor=downsize_factor, dilate_factor=dilate_factor,\
 		x_shift=x_shift, y_shift=y_shift)
 	font_name = ttf.split('/')[-1].split('.')[0]
-	img_path = f'../data/{letter}/{font_name}.png'
+	img_path = f'../../data/{letter}/{font_name}.png'
 	img.save(img_path)
 	pxls = np.asarray(img)
 	return pxls
