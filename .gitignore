@@ -1,4 +1,8 @@
+*.h5
+*.png
+*.p
 *.otf
 *.ttf
 /data/**/**
+/models/**/**
 *.ipynb_checkpoints
