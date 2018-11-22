@@ -154,14 +154,14 @@ def center_parameters(ttf, letter, downsize_factor, dilate_factor,x_shift, y_shi
 	return x_shift, y_shift
 
 
-def processed_img_constructor(ttf, letter, downsize_factor, dilate_factor,x_shift, y_shift):
+def processed_img_constructor(ttf, letter, downsize_factor, dilate_factor,x_shift, y_shift, dir_path):
 	'''Once dilation, downsizing, and shifting parameters
 	are extracted, call this function to generate an image 
 	that will minimize the imperfections, thus normalizing the images'''
 	img = ttf_to_png(ttf, letter, downsize_factor=downsize_factor, dilate_factor=dilate_factor,\
 		x_shift=x_shift, y_shift=y_shift)
 	font_name = ttf.split('/')[-1].split('.')[0]
-	img_path = FONT_PATH + f'{letter}/{font_name}.png'
+	img_path = dir_path + f'letters/{letter}/{font_name}.png'
 	img.save(img_path)
 	pxls = np.asarray(img)
 	return pxls
