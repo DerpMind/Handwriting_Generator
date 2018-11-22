@@ -1,8 +1,6 @@
 *.h5
-*.png
-*.p
 *.otf
 *.ttf
-/data/**/**
+/data/fonts/**
 /models/**/**
 *.ipynb_checkpoints
