@@ -2,5 +2,6 @@
 *.otf
 *.ttf
 /data/fonts/**
+/data/letters/**
 /models/**/**
 *.ipynb_checkpoints
